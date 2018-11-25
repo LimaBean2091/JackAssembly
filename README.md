@@ -12,4 +12,7 @@ COMMANDS:
  * JZ mem_location => Jump to memory location IF Zero flag is set
  * JMP mem_location => Jump to a memory location
  * HLT => Halt the main clock (ALWAYS USE AT END OF PROGRAM)
+ 
+UPCOMING FEATURES:
+
  * JC mem_location => Jump to memory location IF carry flag is set 
