@@ -117,18 +117,10 @@ def runCode(cmd,arg):
     
     if mem_load == "000000b1":
         mem_load = "00000000"
-    if mem_load == "00000000":
-        flags[0] = True
-    else:
-        flags[0] = False     
-    if len(mem_load) != 8:
-        flags[1] = True
-    elif len(mem_load) == 8:
-        flags[1] = False
     
     if cmd == "JMP":
         ptr = "0x"+arg
-    elif cmd == "JZ" and flags[0]:
+    elif cmd == "JZ" and mem_load == "00000000":
         ptr = "0x"+arg
     elif cmd == "LD":
         mem_load = getValFromPtr("0x"+arg)
@@ -144,6 +136,8 @@ def runCode(cmd,arg):
         raise Halt
     elif cmd == "JC" and flags[1]:
         ptr = "0x"+arg
+    elif cmd == False:
+        raise Halt
     ptr = "0x"+add(ptr.replace("0x",""),"00000001")
     return
 print("=-=-=-CODE-=-=-=")
@@ -152,6 +146,5 @@ print("\nRunning Program...")
 try:
     while True:
         runCode(getCmdFromPtr(ptr),getValFromPtr(ptr))
-except Halt:
+except:
     pass
-
