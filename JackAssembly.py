@@ -14,20 +14,21 @@
 # Change this variable to a file with the code inside it
 
 
-
-
 FILE_CODE = "./examples/255-0.jas" # Print binary values from 11111111 to 00000000
+CODE_LINE_EXEC_TIME = 0.1; # Time for each line of code to run (set to 0 for instant, tho not recommended)
 
-
-
-
-#Do not mess with code below.
+#Do not mess with code below ( Unless you know what you're doing. ) 
+import os;
+import time;
+import platform;
 
 class Halt(Exception): pass
 
 locations = []
 ptr = "0x00000000"
 mem_load = "00000000"
+last_out = "No output";
+cptr = 0;
 flags = [
     False, # Zero Flag
     False # Carry Flag
@@ -49,22 +50,18 @@ def countMem():
         if (commands[i][0] == "MEM"):
             num_mem += 1
     return num_mem
-def display():
+def getdisplay():
+    disp = "";
     n = 8
-    print("MEMORY:")
     for i in xrange(len(commands)):
         b = bin(i)[2:]
         l = len(b)
         b = str(0) * (n - l) + b
         cmd = commands[i][0]
         subcmd = commands[i][1]
-        if (i == countMem()):
-            print "\nPROGRAM:"
-        if (commands[i][0] == "MEM"):
-            print "0x"+b+" "+subcmd
-        else:
-            print "0x"+b+" "+cmd+" "+subcmd
+        disp += "0x"+b+" "+cmd+" "+subcmd+"\n"
         locations.append(["0x"+b,commands[i][0],commands[i][1].replace("0x","")])
+    return disp;
 def getCmdFromPtr(memloc):
     for i in xrange(len(locations)):
         if (locations[i][0] == memloc):
@@ -75,11 +72,33 @@ def getValFromPtr(memloc):
         if (locations[i][0] == memloc):
             return locations[i][2]
     return False
+def debugger_tick(line):
+    disp = getdisplay()
+    disp = disp.split('\n');
+    if platform.system() == "Linux" or platform.system() == "Darwin":
+        os.system("clear");
+    else:
+        os.system("cls");
+    print("==MEMORY==\n")
+    n = 8
+    for i in range(0,len(commands)):
+        if (commands[i][0] == "MEM"):
+            b = bin(i)[2:]
+            l = len(b)
+            b = str(0) * (n - l) + b
+            subcmd = commands[i][1]
+            print "0x"+b+" "+getValFromPtr("0x"+b)
+    print("\n==CODE==\n")
+    for i in range(0,len(disp)-1):
+        if line == i:
+            print(disp[i] + " "*(30-len(disp[i])) + "<=");
+        else:
+            print(disp[i])
+    print("\nOutput: {0}".format(last_out))
 def setValFromPtr(memloc,val):
     for i in xrange(len(locations)):
         if (locations[i][0] == memloc):
             locations[i][2] = val
-            return
 def add(x,y):
         maxlen = max(len(x), len(y))
 
@@ -109,10 +128,22 @@ def sub(s1, s2):
     b = bin(int(s1, 2) - int(s2, 2))[2:]
     l = len(b)
     b = str(0) * (8 - l) + b
-    return b  
+    return b
+def getLineFromPtr(ptr):
+    n = 8
+    for i in range(0,len(commands)):
+        b = bin(i)[2:]
+        l = len(b)
+        b = str(0) * (n - l) + b
+        if ("0x"+b) == ptr:
+            return i;
+def output(msg):
+    global last_out;
+    last_out = msg;
 def runCode(cmd,arg):
     global mem_load
     global ptr
+    global cptr
     global flags
     
     if mem_load == "000000b1":
@@ -120,12 +151,14 @@ def runCode(cmd,arg):
     
     if cmd == "JMP":
         ptr = "0x"+arg
+        cptr = getLineFromPtr("0x"+arg)
     elif cmd == "JZ" and mem_load == "00000000":
         ptr = "0x"+arg
+        cptr = getLineFromPtr("0x"+arg)
     elif cmd == "LD":
         mem_load = getValFromPtr("0x"+arg)
     elif cmd == "OUT":
-        print mem_load
+        output(mem_load + " | " + str(int(mem_load,2)))
     elif cmd == "STO":
         setValFromPtr(arg,mem_load)
     elif cmd == "ADD":
@@ -136,15 +169,23 @@ def runCode(cmd,arg):
         raise Halt
     elif cmd == "JC" and flags[1]:
         ptr = "0x"+arg
+        cptr = getLineFromPtr("0x"+arg)
     elif cmd == False:
         raise Halt
     ptr = "0x"+add(ptr.replace("0x",""),"00000001")
+    cptr += 1;
     return
-print("=-=-=-CODE-=-=-=")
-display()
 print("\nRunning Program...")
 try:
     while True:
+        debugger_tick(cptr);
         runCode(getCmdFromPtr(ptr),getValFromPtr(ptr))
+        time.sleep(CODE_LINE_EXEC_TIME)
 except:
-    pass
+    pass;
+    
+# try:
+#     while True:
+#         runCode(getCmdFromPtr(ptr),getValFromPtr(ptr))
+# except:
+#     pass
