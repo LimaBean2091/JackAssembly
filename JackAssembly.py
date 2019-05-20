@@ -15,7 +15,7 @@
 
 
 FILE_CODE = "./examples/255-0.jas" # Print binary values from 11111111 to 00000000
-CODE_LINE_EXEC_TIME = 0.1; # Time for each line of code to run (set to 0 for instant, tho not recommended)
+CODE_LINE_EXEC_TIME = 0.03; # Time for each line of code to run (set to 0 for instant, tho not recommended)
 
 #Do not mess with code below ( Unless you know what you're doing. ) 
 import os;
@@ -62,7 +62,7 @@ def getdisplay():
         b = str(0) * (n - l) + b
         cmd = commands[i][0]
         subcmd = commands[i][1]
-        disp += "0x"+b+" "+cmd+" "+subcmd+"\n"
+        disp += "0x"+b+" "+cmd+" "*(4-len(cmd))+subcmd+"\n"
         locations.append(["0x"+b,commands[i][0],commands[i][1].replace("0x","")])
     return disp;
 def getCmdFromPtr(memloc):
@@ -167,7 +167,7 @@ def runCode(cmd,arg):
     if cmd == "JMP":
         ptr = "0x"+arg
         cptr = getLineFromPtr("0x"+arg)
-    elif cmd == "JZ" and mem_load == "00000000":
+    elif cmd == "JZ" and mem_load == "00000000" and flags[1] == False:
         ptr = "0x"+arg
         cptr = getLineFromPtr("0x"+arg)
     elif cmd == "LD":
@@ -183,6 +183,8 @@ def runCode(cmd,arg):
             pass;
         else:
             mem_load = add(mem_load,arg)
+    elif cmd == "ADD" and flags[1] == True:
+        raise Halt("8-Bit Integer Overflow");
     elif cmd == "SUB":
         mem_load = sub(mem_load,arg)
     elif cmd == "HLT":
@@ -203,6 +205,8 @@ def runCode(cmd,arg):
         pass;
     elif cmd == "ADD":
         pass;
+    elif flags[1]:
+        raise Halt("8-Bit Integer Overflow");
     else:
         raise Halt("Could not parse command: "+cmd);
     ptr = "0x"+add(ptr.replace("0x",""),"00000001")
