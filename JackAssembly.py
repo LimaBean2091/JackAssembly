@@ -15,7 +15,7 @@
 
 
 FILE_CODE = "./examples/255-0.jas" # Print binary values from 11111111 to 00000000
-CODE_LINE_EXEC_TIME = 0.05; # Time for each line of code to run (set to 0 for instant, tho not recommended)
+CODE_LINE_EXEC_TIME = 0.1; # Time for each line of code to run (set to 0 for instant, tho not recommended)
 
 #Do not mess with code below ( Unless you know what you're doing. ) 
 import os;
@@ -161,6 +161,9 @@ def runCode(cmd,arg):
     if mem_load == "000000b1":
         mem_load = "00000000"
     
+    if int(mem_load,2) > 255:
+        flags[1] = True;
+    
     if cmd == "JMP":
         ptr = "0x"+arg
         cptr = getLineFromPtr("0x"+arg)
@@ -172,10 +175,14 @@ def runCode(cmd,arg):
         mem_load = getValFromPtr("0x"+arg)
     elif cmd == "OUT":
         output(mem_load + " | " + str(int(mem_load,2)))
-    elif cmd == "STO":
+    elif cmd == "STO" and flags[1] == False:
         setValFromPtr(arg,mem_load)
-    elif cmd == "ADD":
-        mem_load = add(mem_load,arg)
+    elif cmd == "ADD" and flags[1] == False:
+        if (int(add(mem_load,arg),2) > 255):
+            flags[1] = True;
+            pass;
+        else:
+            mem_load = add(mem_load,arg)
     elif cmd == "SUB":
         mem_load = sub(mem_load,arg)
     elif cmd == "HLT":
@@ -183,13 +190,18 @@ def runCode(cmd,arg):
     elif cmd == "JC" and flags[1]:
         ptr = "0x"+arg
         cptr = getLineFromPtr("0x"+arg)
+        flags[1] = False;
     elif cmd == False:
         raise Halt
     elif cmd == "MEM":
         pass;
+    elif cmd == "STO":
+        pass;
     elif cmd == "JZ":
         pass;
     elif cmd == "JC":
+        pass;
+    elif cmd == "ADD":
         pass;
     else:
         raise Halt("Could not parse command: "+cmd);
