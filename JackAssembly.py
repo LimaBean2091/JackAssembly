@@ -15,7 +15,7 @@
 
 
 FILE_CODE = "./examples/255-0.jas" # Print binary values from 11111111 to 00000000
-CODE_LINE_EXEC_TIME = 0.1; # Time for each line of code to run (set to 0 for instant, tho not recommended)
+CODE_LINE_EXEC_TIME = 0.05; # Time for each line of code to run (set to 0 for instant, tho not recommended)
 
 #Do not mess with code below ( Unless you know what you're doing. ) 
 import os;
@@ -28,11 +28,14 @@ locations = []
 ptr = "0x00000000"
 mem_load = "00000000"
 last_out = "No output";
+last_debug = "";
 cptr = 0;
 flags = [
     False, # Zero Flag
     False # Carry Flag
 ]
+def debug(msg):
+    last_debug = msg;
 def parseFile(file):
     fileCode = []
     with open(file,"r") as f:
@@ -68,9 +71,10 @@ def getCmdFromPtr(memloc):
             return locations[i][1]
     return False
 def getValFromPtr(memloc):
+    global last_debug
     for i in xrange(len(locations)):
         if (locations[i][0] == memloc):
-            return locations[i][2]
+            return locations[i][2];
     return False
 def debugger_tick(line):
     disp = getdisplay()
@@ -79,7 +83,7 @@ def debugger_tick(line):
         os.system("clear");
     else:
         os.system("cls");
-    print("==MEMORY==\n")
+    print("==MEMORY==")
     n = 8
     for i in range(0,len(commands)):
         if (commands[i][0] == "MEM"):
@@ -88,7 +92,7 @@ def debugger_tick(line):
             b = str(0) * (n - l) + b
             subcmd = commands[i][1]
             print "0x"+b+" "+getValFromPtr("0x"+b)
-    print("\n==CODE==\n")
+    print("==CODE==")
     for i in range(0,len(disp)-1):
         if line == i:
             print(disp[i] + " "*(30-len(disp[i])) + "<=");
@@ -96,9 +100,16 @@ def debugger_tick(line):
             print(disp[i])
     print("\nOutput: {0}".format(last_out))
 def setValFromPtr(memloc,val):
+    global last_out
     for i in xrange(len(locations)):
-        if (locations[i][0] == memloc):
+        if (locations[i][0] == "0x"+memloc):
             locations[i][2] = val
+def getArgFromPtr(ptr):
+    global last_out
+    for i in xrange(len(locations)):
+        if (locations[i][0] == ptr):
+            return locations[i][2]
+    return False;
 def add(x,y):
         maxlen = max(len(x), len(y))
 
@@ -145,6 +156,7 @@ def runCode(cmd,arg):
     global ptr
     global cptr
     global flags
+    global last_debug
     
     if mem_load == "000000b1":
         mem_load = "00000000"
@@ -156,6 +168,7 @@ def runCode(cmd,arg):
         ptr = "0x"+arg
         cptr = getLineFromPtr("0x"+arg)
     elif cmd == "LD":
+        last_debug = arg
         mem_load = getValFromPtr("0x"+arg)
     elif cmd == "OUT":
         output(mem_load + " | " + str(int(mem_load,2)))
@@ -172,6 +185,14 @@ def runCode(cmd,arg):
         cptr = getLineFromPtr("0x"+arg)
     elif cmd == False:
         raise Halt
+    elif cmd == "MEM":
+        pass;
+    elif cmd == "JZ":
+        pass;
+    elif cmd == "JC":
+        pass;
+    else:
+        raise Halt("Could not parse command: "+cmd);
     ptr = "0x"+add(ptr.replace("0x",""),"00000001")
     cptr += 1;
     return
@@ -179,13 +200,10 @@ print("\nRunning Program...")
 try:
     while True:
         debugger_tick(cptr);
-        runCode(getCmdFromPtr(ptr),getValFromPtr(ptr))
+        runCode(getCmdFromPtr(ptr),getArgFromPtr(ptr))
         time.sleep(CODE_LINE_EXEC_TIME)
-except:
-    pass;
-    
-# try:
-#     while True:
-#         runCode(getCmdFromPtr(ptr),getValFromPtr(ptr))
-# except:
-#     pass
+except Exception as e:
+    if (str(e) == ""):
+        pass;
+    else:
+        print("Error: "+str(e));
