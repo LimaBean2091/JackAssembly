@@ -15,12 +15,14 @@
 
 
 FILE_CODE = "./examples/255-0.jas" # Print binary values from 11111111 to 00000000
-CPU_FREQUENCY = 25; # Frequency of CPU, in Hz
+CPU_FREQUENCY = 500; # Frequency of CPU, in Hz
+
 
 #Do not mess with code below ( Unless you know what you're doing. ) 
 import os;
 import time;
 import platform;
+import datetime;
 
 t = time.time();
 
@@ -92,12 +94,12 @@ def debugger_tick(line):
     else:
         os.system("cls");
     print("==INFO==\n")
-    print("SET CPU SPEED----{0}Hz".format(round(1/CODE_LINE_EXEC_TIME)))
-    print("REAL CPU SPEED---{0}Hz".format(round(steps/(time.time()-t))))
+    print("SET CPU SPEED-----{0}Hz".format(round(1/CODE_LINE_EXEC_TIME)))
+    print("REAL CPU SPEED----{0}Hz".format(round(steps/(time.time()-t))))
     if not infloop:
-        print("ETA--------------{0}s".format(round(round(tSteps/round(steps/(time.time()-t)),3)-round(time.time()-t,3),2)))
+        print("ETA---------------{0}s".format(str(datetime.timedelta(seconds=round(round(tSteps/round(steps/(time.time()-t)),6)-round(time.time()-t,6),6)))))
     else:
-        print("ETA--------------INF")
+        print("ETA---------------INF")
     print("\n==MEMORY==\n")
     n = 8
     for i in range(0,len(commands)):
@@ -258,7 +260,7 @@ def calculateSteps():
     totalSteps = 0
     try:
         while True:
-            if totalSteps >= 10000:
+            if totalSteps >= 1000000:
                 infloop = True;
                 raise Halt();
             runCode(getCmdFromPtr(ptr),getArgFromPtr(ptr))
@@ -267,9 +269,10 @@ def calculateSteps():
         pass;
     resetSim()
     return totalSteps;
-print("\nRunning Program...")
 CODE_LINE_EXEC_TIME = round(1/CPU_FREQUENCY,10)
+print("\nCalculating Steps...")
 tSteps = calculateSteps()
+print("\nRunning Program...")
 try:
     while True:
         steps += 1;
