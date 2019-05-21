@@ -30,10 +30,13 @@ mem_load = "00000000"
 last_out = "No output";
 last_debug = "";
 cptr = 0;
+steps = 1;
+tSteps = 0;
 flags = [
     False, # Zero Flag
     False # Carry Flag
 ]
+infloop = False
 def debug(msg):
     last_debug = msg;
 def parseFile(file):
@@ -49,14 +52,14 @@ def parseFile(file):
 commands = parseFile(FILE_CODE)
 def countMem():
     num_mem = 0
-    for i in xrange(len(commands)):
+    for i in range(0,len(commands)):
         if (commands[i][0] == "MEM"):
             num_mem += 1
     return num_mem
 def getdisplay():
     disp = "";
     n = 8
-    for i in xrange(len(commands)):
+    for i in range(0,len(commands)):
         b = bin(i)[2:]
         l = len(b)
         b = str(0) * (n - l) + b
@@ -66,17 +69,19 @@ def getdisplay():
         locations.append(["0x"+b,commands[i][0],commands[i][1].replace("0x","")])
     return disp;
 def getCmdFromPtr(memloc):
-    for i in xrange(len(locations)):
+    for i in range(0,len(locations)):
         if (locations[i][0] == memloc):
             return locations[i][1]
     return False
 def getValFromPtr(memloc):
     global last_debug
-    for i in xrange(len(locations)):
+    for i in range(0,len(locations)):
         if (locations[i][0] == memloc):
             return locations[i][2];
     return False
 def debugger_tick(line):
+    global steps
+    global tSteps
     disp = getdisplay()
     disp = disp.split('\n');
     if platform.system() == "Linux" or platform.system() == "Darwin":
@@ -91,7 +96,7 @@ def debugger_tick(line):
             l = len(b)
             b = str(0) * (n - l) + b
             subcmd = commands[i][1]
-            print "0x"+b+" "+getValFromPtr("0x"+b)
+            print("0x"+b+" "+getValFromPtr("0x"+b))
     print("==CODE==")
     for i in range(0,len(disp)-1):
         if line == i:
@@ -99,14 +104,19 @@ def debugger_tick(line):
         else:
             print(disp[i])
     print("\nOutput: {0}".format(last_out))
+    if not infloop:
+        tbar = round(steps/tSteps*25)
+        sbar = 25-round(steps/tSteps*25)
+        perc = round(steps/tSteps*100)
+        print("Running... [{0}{1}] [{2}%]".format("#"*tbar," "*sbar,perc))
 def setValFromPtr(memloc,val):
     global last_out
-    for i in xrange(len(locations)):
+    for i in range(0,len(locations)):
         if (locations[i][0] == "0x"+memloc):
             locations[i][2] = val
 def getArgFromPtr(ptr):
     global last_out
-    for i in xrange(len(locations)):
+    for i in range(0,len(locations)):
         if (locations[i][0] == ptr):
             return locations[i][2]
     return False;
@@ -157,7 +167,7 @@ def runCode(cmd,arg):
     global cptr
     global flags
     global last_debug
-    
+        
     if mem_load == "000000b1":
         mem_load = "00000000"
     
@@ -212,9 +222,44 @@ def runCode(cmd,arg):
     ptr = "0x"+add(ptr.replace("0x",""),"00000001")
     cptr += 1;
     return
+def resetSim():
+    global locations
+    global ptr
+    global mem_load
+    global last_out
+    global last_debug
+    global cptr
+    global flags
+    locations = []
+    ptr = "0x00000000"
+    mem_load = "00000000"
+    last_out = "No output";
+    last_debug = "";
+    cptr = 0;
+    flags = [
+        False, # Zero Flag
+        False # Carry Flag
+    ]
+def calculateSteps():
+    global infloop
+    getdisplay()
+    totalSteps = 0
+    try:
+        while True:
+            if totalSteps >= 10000:
+                infloop = True;
+                raise Halt();
+            runCode(getCmdFromPtr(ptr),getArgFromPtr(ptr))
+            totalSteps += 1;
+    except Exception:
+        pass;
+    resetSim()
+    return totalSteps;
 print("\nRunning Program...")
+tSteps = calculateSteps()
 try:
     while True:
+        steps += 1;
         debugger_tick(cptr);
         runCode(getCmdFromPtr(ptr),getArgFromPtr(ptr))
         time.sleep(CODE_LINE_EXEC_TIME)
