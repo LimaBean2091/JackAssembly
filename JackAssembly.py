@@ -15,7 +15,7 @@
 
 
 FILE_CODE = "./examples/255-0.jas" # Print binary values from 11111111 to 00000000
-CPU_FREQUENCY = 25; # Time for each line of code to run (set to 0 for instant, tho not recommended)
+CPU_FREQUENCY = 25; # Frequency of CPU, in Hz
 
 #Do not mess with code below ( Unless you know what you're doing. ) 
 import os;
