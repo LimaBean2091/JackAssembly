@@ -91,9 +91,11 @@ def debugger_tick(line):
         os.system("clear");
     else:
         os.system("cls");
-    print("==INFO==")
+    print("==INFO==\n")
     print("CPU SPEED-----{0}Hz".format(round(1/CODE_LINE_EXEC_TIME)))
-    print("==MEMORY==")
+    if not infloop:
+        print("ETA-----------{0}s".format(round(tSteps/round(1/CODE_LINE_EXEC_TIME,3),3)))
+    print("\n==MEMORY==\n")
     n = 8
     for i in range(0,len(commands)):
         if (commands[i][0] == "MEM"):
@@ -102,7 +104,7 @@ def debugger_tick(line):
             b = str(0) * (n - l) + b
             subcmd = commands[i][1]
             print("0x"+b+" "+getValFromPtr("0x"+b))
-    print("==CODE==")
+    print("\n==CODE==\n")
     for i in range(0,len(disp)-1):
         if line == i:
             print(disp[i] + " "*(30-len(disp[i])) + "<=");
