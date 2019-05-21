@@ -92,11 +92,12 @@ def debugger_tick(line):
     else:
         os.system("cls");
     print("==INFO==\n")
-    print("CPU SPEED-----{0}Hz".format(round(1/CODE_LINE_EXEC_TIME)))
+    print("SET CPU SPEED----{0}Hz".format(round(1/CODE_LINE_EXEC_TIME)))
+    print("REAL CPU SPEED---{0}Hz".format(round(steps/(time.time()-t))))
     if not infloop:
-        print("ETA-----------{0}s".format(round(tSteps/round(1/CODE_LINE_EXEC_TIME,3),3)))
+        print("ETA--------------{0}s".format(round(round(tSteps/round(steps/(time.time()-t)),3)-round(time.time()-t,3),2)))
     else:
-        print("ETA-----------INF")
+        print("ETA--------------INF")
     print("\n==MEMORY==\n")
     n = 8
     for i in range(0,len(commands)):
