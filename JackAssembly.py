@@ -95,6 +95,8 @@ def debugger_tick(line):
     print("CPU SPEED-----{0}Hz".format(round(1/CODE_LINE_EXEC_TIME)))
     if not infloop:
         print("ETA-----------{0}s".format(round(tSteps/round(1/CODE_LINE_EXEC_TIME,3),3)))
+    else:
+        print("ETA-----------INF")
     print("\n==MEMORY==\n")
     n = 8
     for i in range(0,len(commands)):
@@ -116,6 +118,8 @@ def debugger_tick(line):
         sbar = 25-round(steps/tSteps*25)
         perc = round(steps/tSteps*100)
         print("Running... [{0}{1}] [{2}/{3}] [{4}%] {5}s".format("#"*tbar," "*sbar,steps,tSteps,perc,round(time.time()-t,3)))
+    else:
+        print("Running... [{0} steps] {1}s".format(steps,round(time.time()-t,3)))
 def setValFromPtr(memloc,val):
     global last_out
     for i in range(0,len(locations)):
