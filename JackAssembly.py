@@ -108,7 +108,7 @@ def debugger_tick(line):
         tbar = round(steps/tSteps*25)
         sbar = 25-round(steps/tSteps*25)
         perc = round(steps/tSteps*100)
-        print("Running... [{0}{1}] [{2}%]".format("#"*tbar," "*sbar,perc))
+        print("Running... [{0}{1}] [{2}/{3}] [{4}%]".format("#"*tbar," "*sbar,steps,tSteps,perc))
 def setValFromPtr(memloc,val):
     global last_out
     for i in range(0,len(locations)):
