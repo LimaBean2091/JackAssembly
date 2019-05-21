@@ -15,7 +15,7 @@
 
 
 FILE_CODE = "./examples/255-0.jas" # Print binary values from 11111111 to 00000000
-CODE_LINE_EXEC_TIME = 0.03; # Time for each line of code to run (set to 0 for instant, tho not recommended)
+CPU_FREQUENCY = 25; # Time for each line of code to run (set to 0 for instant, tho not recommended)
 
 #Do not mess with code below ( Unless you know what you're doing. ) 
 import os;
@@ -267,6 +267,7 @@ def calculateSteps():
     resetSim()
     return totalSteps;
 print("\nRunning Program...")
+CODE_LINE_EXEC_TIME = round(1/CPU_FREQUENCY,10)
 tSteps = calculateSteps()
 try:
     while True:
