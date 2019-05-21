@@ -22,6 +22,8 @@ import os;
 import time;
 import platform;
 
+t = time.time();
+
 class Halt(Exception): pass
 
 locations = []
@@ -82,12 +84,15 @@ def getValFromPtr(memloc):
 def debugger_tick(line):
     global steps
     global tSteps
+    global CODE_LINE_EXEC_TIME
     disp = getdisplay()
     disp = disp.split('\n');
     if platform.system() == "Linux" or platform.system() == "Darwin":
         os.system("clear");
     else:
         os.system("cls");
+    print("==INFO==")
+    print("CPU SPEED-----{0}Hz".format(round(1/CODE_LINE_EXEC_TIME)))
     print("==MEMORY==")
     n = 8
     for i in range(0,len(commands)):
@@ -108,7 +113,7 @@ def debugger_tick(line):
         tbar = round(steps/tSteps*25)
         sbar = 25-round(steps/tSteps*25)
         perc = round(steps/tSteps*100)
-        print("Running... [{0}{1}] [{2}/{3}] [{4}%]".format("#"*tbar," "*sbar,steps,tSteps,perc))
+        print("Running... [{0}{1}] [{2}/{3}] [{4}%] {5}s".format("#"*tbar," "*sbar,steps,tSteps,perc,round(time.time()-t,3)))
 def setValFromPtr(memloc,val):
     global last_out
     for i in range(0,len(locations)):
